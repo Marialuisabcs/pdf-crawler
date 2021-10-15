@@ -137,8 +137,12 @@ def url_opener(url_root):
     return pags
 
 
-if __name__ == "__main__":
+def main():
     urls = url_opener("https://scholar.google.com.br/scholar?hl=en&as_sdt=0%2C5&q=machine+learning&btnG=")
     for url in urls:
         crawl(url)
     download('pdf_links.txt')
+
+
+if __name__ == "__main__":
+    main()
