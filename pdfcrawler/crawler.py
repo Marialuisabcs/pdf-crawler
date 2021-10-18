@@ -15,7 +15,7 @@ def is_valid(url):
     return bool(parsed.netloc) and bool(parsed.scheme)
 
 
-def get_all_website_links(url):
+def get_all_website_links(url, folder_name):
     """
     Returns all URLs that is found on `url` in which it belongs to the same website
     """
@@ -45,7 +45,7 @@ def get_all_website_links(url):
             if href not in external_urls:
                 print(f"{GREEN}[!] External link: {href}{RESET}")
                 external_urls.add(href)
-                only_pdf(href)
+                only_pdf(href, folder_name)
             continue
         print(f"{GRAY}[*] Internal link: {href}{RESET}")
         urls.add(href)
@@ -53,7 +53,7 @@ def get_all_website_links(url):
     return urls
 
 
-def crawl(url, max_urls=30):
+def crawl(url, folder_name, max_urls=30):
     """
     Crawls a web page and extracts all links.
     You'll find all links in `external_urls` and `internal_urls` global set variables.
@@ -63,37 +63,36 @@ def crawl(url, max_urls=30):
     global total_urls_visited
     total_urls_visited += 1
     print(f"{YELLOW}[*] Crawling: {url}{RESET}")
-    links = get_all_website_links(url)
+    links = get_all_website_links(url, folder_name)
     for link in links:
         if total_urls_visited > max_urls:
             break
-        crawl(link, max_urls=max_urls)
+        crawl(link, folder_name, max_urls=max_urls)
 
 
-def only_pdf(link):
+def only_pdf(link, folder_name):
     if link.startswith("https:"):
         response = requests.get(link, headers=headers)
         content_type = response.headers['content-type']
         extension = mimetypes.guess_extension(content_type)
         if extension == ".pdf":
-            with open("pdf_links.txt", 'a') as pdf:
+            with open(os.path.join(Path.cwd() / 'output' / folder_name / 'pdf_links.txt'), 'a') as pdf:
                 pdf.write(link + "\n")
 
 
-def download(input_file):
-    (Path.cwd() / 'pdfs').mkdir(exist_ok=True)
-    print("Lendo links...")
+def download(input_file, folder_name):
+    (Path.cwd() / 'output' / folder_name / 'pdfs').mkdir(exist_ok=True)
     pdf_links = open(input_file, "r")
     pdfs = pdf_links.read().splitlines()
     pdf_links.close()
-    print("Iniciando downloads...\n")
     cont = 1
     for link in pdfs:
-        print('LINK = ' + link)
-        print('CONT = ' + str(cont))
+        print(f"{GREEN}[!] Downloading link {cont}: {link}{RESET}")
+        # print('LINK = ' + link)
+        # print('CONT = ' + str(cont))
         req = Request(link, headers=headers)
         response = urlopen(req)
-        file = open(os.path.join(Path.cwd() / 'pdfs', str(cont) + '.pdf'), 'wb')
+        file = open(os.path.join(Path.cwd() / 'output' / folder_name / 'pdfs', str(cont) + '.pdf'), 'wb')
         file.write(response.read())
         file.close()
         cont += 1
@@ -120,8 +119,7 @@ def url_opener(url_root):
     return pags
 
 
-def run(google_link):
+def run(google_link, folder_name):
     urls = url_opener(google_link)
     for url in urls:
-        crawl(url)
-    download('pdf_links.txt')
+        crawl(url, folder_name)
