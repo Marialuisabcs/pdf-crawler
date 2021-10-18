@@ -102,7 +102,7 @@ def url_opener(url_root):
     start_param = 10
     pags = [url_root]
 
-    while start_param < 30:
+    while start_param < 1000:
         params = {"start": str(start_param)}
         url_parse = urlparse(url_root)
         query = url_parse.query
