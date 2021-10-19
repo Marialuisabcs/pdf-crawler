@@ -70,6 +70,8 @@ class CLI:
     def get_folder(self):
         print('current folder: ' + str(self.folder))
 
+        self.request_option()
+
     def start(self):
         print('current folder: ' + str(self.folder))
         print('Type `help` for help')
