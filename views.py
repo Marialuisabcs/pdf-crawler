@@ -37,7 +37,7 @@ class CLI:
             print('Folder name can not be empty')
             folder_name = input('>> Folder name: ')
         self.folder = folder_name
-        (Path.cwd() / 'Output' / folder_name).mkdir(exist_ok=True)
+        (Path.cwd() / 'output' / folder_name).mkdir(exist_ok=True)
         print('Folder selected succesfully!')
         self.request_option()
 
