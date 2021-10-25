@@ -5,6 +5,7 @@ GREEN = colorama.Fore.GREEN
 GRAY = colorama.Fore.LIGHTBLACK_EX
 RESET = colorama.Fore.RESET
 YELLOW = colorama.Fore.YELLOW
+RED = colorama.Fore.RED
 
 internal_urls = set()
 external_urls = set()
