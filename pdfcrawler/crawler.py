@@ -1,11 +1,14 @@
+import urllib
+from urllib.error import HTTPError
 from pdfcrawler import *
 import requests
 from urllib.parse import *
 from urllib.request import *
 from bs4 import BeautifulSoup
-import mimetypes
 from pathlib import Path
 import os
+import time
+
 
 def is_valid(url):
     """
@@ -24,22 +27,29 @@ def get_all_website_links(url, folder_name):
     # domain name of the URL without the protocol
     domain_name = urlparse(url).netloc
     soup = BeautifulSoup(requests.get(url, headers=headers).content, "html.parser")
+    time.sleep(2)
+
     for a_tag in soup.findAll("a"):
         href = a_tag.attrs.get("href")
+
         if href == "" or href is None:
             # href empty tag
             continue
+
         # join the URL if it's relative (not absolute link)
         href = urljoin(url, href)
         parsed_href = urlparse(href)
         # remove URL GET parameters, URL fragments, etc.
         href = parsed_href.scheme + "://" + parsed_href.netloc + parsed_href.path
+
         if not is_valid(href):
             # not a valid URL
             continue
+
         if href in internal_urls:
             # already in the set
             continue
+
         if domain_name not in href:
             # external link
             if href not in external_urls:
@@ -47,9 +57,11 @@ def get_all_website_links(url, folder_name):
                 external_urls.add(href)
                 only_pdf(href, folder_name)
             continue
+
         print(f"{GRAY}[*] Internal link: {href}{RESET}")
         urls.add(href)
         internal_urls.add(href)
+
     return urls
 
 
@@ -62,40 +74,48 @@ def crawl(url, folder_name, max_urls=30):
     """
     global total_urls_visited
     total_urls_visited += 1
+
     print(f"{YELLOW}[*] Crawling: {url}{RESET}")
     links = get_all_website_links(url, folder_name)
+
     for link in links:
         if total_urls_visited > max_urls:
             break
+
         crawl(link, folder_name, max_urls=max_urls)
+        time.sleep(1)
 
 
 def only_pdf(link, folder_name):
     if link.startswith("https:"):
-        response = requests.get(link, headers=headers)
-        content_type = response.headers['content-type']
-        extension = mimetypes.guess_extension(content_type)
-        if extension == ".pdf":
-            with open(os.path.join(Path.cwd() / 'output' / folder_name / 'pdf_links.txt'), 'a') as pdf:
-                pdf.write(link + "\n")
+        path = urlparse(link).path
+
+        if path.endswith(".pdf"):
+
+            with open(os.path.join(Path.cwd() / 'output' / folder_name / 'links_test.txt'), 'a') as link_test:
+                link_test.write(link + "\n")
 
 
 def download(input_file, folder_name):
     (Path.cwd() / 'output' / folder_name / 'pdfs').mkdir(exist_ok=True)
-    pdf_links = open(input_file, "r")
+
+    pdf_links = open(input_file, 'r')
     pdfs = pdf_links.read().splitlines()
     pdf_links.close()
+
     cont = 1
+
     for link in pdfs:
         print(f"{GREEN}[!] Downloading link {cont}: {link}{RESET}")
-        # print('LINK = ' + link)
-        # print('CONT = ' + str(cont))
-        req = Request(link, headers=headers)
-        response = urlopen(req)
-        file = open(os.path.join(Path.cwd() / 'output' / folder_name / 'pdfs', str(cont) + '.pdf'), 'wb')
-        file.write(response.read())
-        file.close()
-        cont += 1
+
+        try:
+            urlretrieve(link, os.path.join(Path.cwd() / 'output' / folder_name / 'pdfs', str(cont) + '.pdf'))
+            time.sleep(1)
+            cont += 1
+        except urllib.error.HTTPError:
+            print(f"{RED}[!!]Error 404: link {cont}")
+            cont += 1
+            pass
 
 
 def url_opener(url_root):
@@ -123,3 +143,4 @@ def run(google_link, folder_name):
     urls = url_opener(google_link)
     for url in urls:
         crawl(url, folder_name)
+
