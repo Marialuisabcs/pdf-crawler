@@ -1,13 +1,14 @@
-import urllib
-from urllib.error import HTTPError
 from pdfcrawler import *
-import requests
-from urllib.parse import *
-from urllib.request import *
 from bs4 import BeautifulSoup
 from pathlib import Path
+from urllib.error import HTTPError
+from urllib.parse import *
+from urllib.request import *
 import os
 import time
+import random
+import urllib
+import requests
 
 
 def is_valid(url):
@@ -27,8 +28,8 @@ def get_all_website_links(url, folder_name):
     # domain name of the URL without the protocol
     domain_name = urlparse(url).netloc
     soup = BeautifulSoup(requests.get(url, headers=headers).content, "html.parser")
-    time.sleep(2)
-
+    time.sleep(random.randint(1, 9))
+    #print(soup)
     for a_tag in soup.findAll("a"):
         href = a_tag.attrs.get("href")
 
@@ -83,7 +84,7 @@ def crawl(url, folder_name, max_urls=30):
             break
 
         crawl(link, folder_name, max_urls=max_urls)
-        time.sleep(1)
+        time.sleep(random.randint(10, 20))
 
 
 def only_pdf(link, folder_name):
@@ -110,7 +111,7 @@ def download(input_file, folder_name):
 
         try:
             urlretrieve(link, os.path.join(Path.cwd() / 'output' / folder_name / 'pdfs', str(cont) + '.pdf'))
-            time.sleep(1)
+            #time.sleep(random.randint(0, 9))
             cont += 1
         except urllib.error.HTTPError:
             print(f"{RED}[!!]Error 404: link {cont}")
