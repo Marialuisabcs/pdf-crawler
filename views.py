@@ -1,8 +1,7 @@
 import sys
 from pathlib import Path
 
-import pdfcrawler.crawler
-from pdfcrawler import *
+import pdfcrawler.google_crawler
 
 
 class CLI:
@@ -39,6 +38,7 @@ class CLI:
         self.folder = folder_name
         (Path.cwd() / 'output' / folder_name).mkdir(exist_ok=True)
         print('Folder selected succesfully!')
+        print('Current folder: ' + str(self.folder))
         self.request_option()
 
     def add_url(self):
@@ -51,7 +51,7 @@ class CLI:
             self.add_folder()
 
         print('\nCrawling...\n')
-        pdfcrawler.crawler.run(url, self.folder)
+        pdfcrawler.google_crawler.run(url, self.folder)
         print('\n\nFinished')
 
         self.request_option()
@@ -62,18 +62,18 @@ class CLI:
             self.request_option()
 
         print('\nDownloading files...\n')
-        pdfcrawler.crawler.download(Path.cwd() / 'output' / self.folder / 'pdf_links.txt', self.folder)
+        pdfcrawler.google_crawler.download(Path.cwd() / 'output' / self.folder / 'pdf_links.txt', self.folder)
         print('\n\nFinished')
 
         self.request_option()
 
     def get_folder(self):
-        print('current folder: ' + str(self.folder))
+        print('Current folder: ' + str(self.folder))
 
         self.request_option()
 
     def start(self):
-        print('current folder: ' + str(self.folder))
+        print('Current folder: ' + str(self.folder))
         print('Type `help` for help')
         self.request_option()
 
@@ -81,4 +81,3 @@ class CLI:
 if __name__ == '__main__':
     cli = CLI()
     cli.start()
-
